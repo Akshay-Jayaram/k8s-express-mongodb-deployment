@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: key-value-app
+  labels:
+    app: key-value-app
+spec:
+  selector:
+    matchLabels:
+      app: key-value-app
+  template:
+    metadata:
+      labels:
+        app: key-value-app
+    spec:
+      containers:
+      - name: key-value-app
+        image: akjyy/key-value-app:1.0.0
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: mongodb-keyvaluedb-creds
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: mongodb-keyvaluedb-creds
+        - name: DB_HOST
+          value: 'mongodb-statefulset-0.mongodb-service.default.svc.cluster.local' 
+        - name: DB_PORT
+          value: '27017'
+        - name: DB_NAME
+          value: 'keyvaluedb'
+        - name: DB_URL
+          value: 'mongodb://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)'
+        ports:
+        - containerPort: 80
